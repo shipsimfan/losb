@@ -3,6 +3,7 @@ use std::path::Path;
 mod calculate;
 mod copy;
 mod create;
+mod fat32;
 
 pub fn create_image() -> Result<(), Box<dyn std::error::Error>> {
     println!();
