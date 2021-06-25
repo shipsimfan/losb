@@ -29,12 +29,17 @@ fn write_root_directory(
     bpb: &fat32::BIOSParameterBlock,
 ) -> Result<(), Box<dyn std::error::Error>> {
     // Write FAT entries
-    file.seek(SeekFrom::Start(
-        (fat32::BYTES_PER_SECTOR * fat32::RESERVED_SECTOR_COUNT) as u64,
-    ))?;
-    file.write(&[
-        0xFF, 0xFF, 0xFF, 0xF, 0xFF, 0xFF, 0xFF, 0xF, 0xFF, 0xFF, 0xFF, 0xF,
-    ])?;
+    let mut i = 0;
+    while i < bpb.num_fats() {
+        file.seek(SeekFrom::Start(
+            (fat32::BYTES_PER_SECTOR * (fat32::RESERVED_SECTOR_COUNT + i * bpb.fat_size())) as u64,
+        ))?;
+        file.write(&[
+            0xFF, 0xFF, 0xFF, 0xF, 0xFF, 0xFF, 0xFF, 0xF, 0xFF, 0xFF, 0xFF, 0xF,
+        ])?;
+
+        i += 1;
+    }
 
     // Write directory entry
     file.seek(SeekFrom::Start(

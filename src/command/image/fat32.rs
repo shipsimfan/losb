@@ -1,5 +1,6 @@
+#![allow(dead_code)]
+
 #[repr(packed(1))]
-#[allow(dead_code)]
 pub struct BIOSParameterBlock {
     bs_jump_boot: [u8; 3],
     bs_oem_name: [u8; 8],
@@ -31,7 +32,6 @@ pub struct BIOSParameterBlock {
 }
 
 #[repr(packed(1))]
-#[allow(dead_code)]
 pub struct FSInfo {
     fsi_lead_signature: u32,
     fsi_reserved_1: [u8; 480],
@@ -43,7 +43,7 @@ pub struct FSInfo {
 }
 
 #[repr(packed(1))]
-#[allow(dead_code)]
+#[derive(Debug, Clone, Copy)]
 pub struct DirectoryEntry {
     name: [u8; 11],
     attribute: u8,
@@ -137,6 +137,14 @@ impl BIOSParameterBlock {
         (self.bpb_reserved_sector_count as u32 + self.bpb_num_fats as u32 * self.bpb_fat_size_32)
             as usize
     }
+
+    pub fn num_fats(&self) -> usize {
+        self.bpb_num_fats as usize
+    }
+
+    pub fn reserved_sectors(&self) -> usize {
+        self.bpb_reserved_sector_count as usize
+    }
 }
 
 impl FSInfo {
@@ -171,6 +179,23 @@ impl DirectoryEntry {
             write_time: 0,
             write_date: 0,
             file_size: file_size,
+        }
+    }
+
+    pub const fn zero() -> Self {
+        DirectoryEntry {
+            name: [0; 11],
+            attribute: 0,
+            nt_reserved: 0,
+            creation_time_tenth: 0,
+            creation_time: 0,
+            creation_date: 0,
+            last_access_date: 0,
+            first_cluster_high: 0,
+            first_cluster_low: 0,
+            write_time: 0,
+            write_date: 0,
+            file_size: 0,
         }
     }
 }
