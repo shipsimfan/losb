@@ -98,17 +98,53 @@ fn build_image(configuration: &str) -> Result<(), Box<dyn std::error::Error>> {
 
 fn run(configuration: &str) -> Result<(), Box<dyn std::error::Error>> {
     build_image(configuration)?;
-    Err(Box::new(crate::Error::NotImplemented(Command::Run)))
+
+    let mut emulator_command = std::process::Command::new(crate::config::EMULATOR);
+    emulator_command.args(crate::config::EMULATOR_FLAGS);
+    emulator_command.stdout(std::process::Stdio::inherit());
+    emulator_command.stderr(std::process::Stdio::inherit());
+    emulator_command.stdin(std::process::Stdio::inherit());
+    emulator_command.output()?;
+
+    Ok(())
 }
 
 fn debug(configuration: &str) -> Result<(), Box<dyn std::error::Error>> {
     build_image(configuration)?;
-    Err(Box::new(crate::Error::NotImplemented(Command::Debug)))
+
+    let mut emulator_command = std::process::Command::new(crate::config::EMULATOR);
+    emulator_command.args(crate::config::EMULATOR_FLAGS);
+    emulator_command.args(crate::config::EMULATOR_DEBUG_FLAGS);
+    emulator_command.stdout(std::process::Stdio::inherit());
+    emulator_command.stderr(std::process::Stdio::inherit());
+    emulator_command.stdin(std::process::Stdio::inherit());
+    emulator_command.spawn()?;
+
+    let mut debugger_command = std::process::Command::new(crate::config::DEBUGGER);
+    debugger_command.args(crate::config::DEBUGGER_FLAGS);
+    debugger_command.stdout(std::process::Stdio::inherit());
+    debugger_command.stderr(std::process::Stdio::inherit());
+    debugger_command.stdin(std::process::Stdio::inherit());
+    debugger_command.output()?;
+
+    Ok(())
 }
 
 fn vbox(configuration: &str) -> Result<(), Box<dyn std::error::Error>> {
     build_image(configuration)?;
-    Err(Box::new(crate::Error::NotImplemented(Command::VBox)))
+
+    let mut vbox_command = std::process::Command::new(crate::config::VBOX);
+    vbox_command.args(crate::config::VBOX_FLAGS);
+    vbox_command.stdout(std::process::Stdio::inherit());
+    vbox_command.stderr(std::process::Stdio::inherit());
+    vbox_command.stdin(std::process::Stdio::inherit());
+    let output = vbox_command.output()?;
+
+    if !output.status.success() {
+        Err(Box::new(crate::error::Error::BuildError(output.status)))
+    } else {
+        Ok(())
+    }
 }
 
 impl Command {
