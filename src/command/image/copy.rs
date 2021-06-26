@@ -1,7 +1,6 @@
 use super::fat32;
 use std::{
     io::{Read, Seek, SeekFrom, Write},
-    os::unix::prelude::OsStrExt,
     path::Path,
 };
 
@@ -124,7 +123,7 @@ impl Copier {
 
                 let mut name = [' ' as u8; 11];
                 let mut i = 0;
-                for c in child.file_name().as_bytes() {
+                for c in child.file_name().to_string_lossy().as_bytes() {
                     if i >= 11 {
                         break;
                     }
@@ -140,7 +139,13 @@ impl Copier {
 
                 let mut name = [' ' as u8; 11];
                 let mut i = 0;
-                for c in child.path().file_stem().unwrap().as_bytes() {
+                for c in child
+                    .path()
+                    .file_stem()
+                    .unwrap()
+                    .to_string_lossy()
+                    .as_bytes()
+                {
                     if i >= 8 {
                         break;
                     }
@@ -153,7 +158,7 @@ impl Copier {
                     None => {}
                     Some(extension) => {
                         let mut i = 8;
-                        for c in extension.as_bytes() {
+                        for c in extension.to_string_lossy().as_bytes() {
                             if i >= 11 {
                                 break;
                             }
