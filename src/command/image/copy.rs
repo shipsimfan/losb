@@ -232,7 +232,7 @@ impl Copier {
             i += 1;
         }
 
-        Ok((first_cluster, num_clusters * fat32::BYTES_PER_SECTOR))
+        Ok((first_cluster, file_data.len()))
     }
 
     fn write_cluster(
