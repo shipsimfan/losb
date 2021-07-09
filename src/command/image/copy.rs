@@ -18,7 +18,7 @@ pub fn copy_directory(
     source_path: &Path,
 ) -> Result<(), Box<dyn std::error::Error>> {
     print!(
-        "     \x1B[34;1mCopying\x1B[0m {} into {} . . .",
+        "     \x1B[36;1mCopying\x1B[0m {} into {} . . .",
         source_path.to_string_lossy(),
         target_image.to_string_lossy()
     );

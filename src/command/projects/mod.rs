@@ -80,9 +80,16 @@ impl Projects {
             }
         };
 
+        let sysroot_path = Path::new(crate::config::SYSROOT_DIR);
+        let library_path = sysroot_path.join(crate::config::LIBRARY_DIR);
+        let include_path = sysroot_path.join(crate::config::INCLUDE_DIR);
+
+        std::fs::create_dir_all(library_path)?;
+        std::fs::create_dir_all(include_path)?;
+
         for project_name in &configuration.0 {
             println!(
-                "    \x1B[34;1mBuilding\x1B[0;1m {}\x1B[0m. . .",
+                "    \x1B[36;1mBuilding\x1B[0;1m {}\x1B[0m. . .",
                 project_name
             );
 
@@ -119,7 +126,7 @@ impl Projects {
 
         for project_name in &configuration.0 {
             println!(
-                "    \x1B[34;1mCleaning\x1B[0;1m {}\x1B[0m. . .",
+                "    \x1B[36;1mCleaning\x1B[0;1m {}\x1B[0m. . .",
                 project_name
             );
 
@@ -133,7 +140,13 @@ impl Projects {
             println!("    \x1B[32;1mFinished\x1B[0;1m {}\x1B[0m\n", project_name);
         }
 
-        std::fs::remove_dir_all(crate::config::SYSROOT_DIR)?;
+        match std::fs::remove_dir_all(crate::config::SYSROOT_DIR) {
+            Ok(()) => {}
+            Err(error) => match error.kind() {
+                std::io::ErrorKind::NotFound => {}
+                _ => return Err(Box::new(error)),
+            },
+        }
 
         println!("    \x1B[32;1mFinished\x1B[0m {}", configuration_name);
 

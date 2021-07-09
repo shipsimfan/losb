@@ -8,6 +8,8 @@ pub const TARGET_IMG: &str = "./os.img";
 
 // Directories
 pub const SYSROOT_DIR: &str = "./sysroot";
+pub const LIBRARY_DIR: &str = "los/lib";
+pub const INCLUDE_DIR: &str = "los/include";
 
 // Programs
 pub const EMULATOR: &str = "qemu-system-x86_64";

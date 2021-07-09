@@ -61,7 +61,7 @@ fn write_root_directory(
 
 pub fn create_image(volume_size: usize, target: &Path) -> Result<(), Box<dyn std::error::Error>> {
     print!(
-        "    \x1B[34;1mCreating\x1B[0m {} ({} MB) . . .",
+        "    \x1B[36;1mCreating\x1B[0m {} ({} MB) . . .",
         target.to_string_lossy(),
         volume_size / 1024 / 1024,
     );
