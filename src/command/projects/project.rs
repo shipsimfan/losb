@@ -6,6 +6,7 @@ pub struct Project {
     path: PathBuf,
     output_path: PathBuf,
     install_path: PathBuf,
+    include_path: Option<PathBuf>,
 }
 
 impl Project {
@@ -37,29 +38,19 @@ impl Project {
             Some(object) => PathBuf::from(object.to_string()?),
         };
 
-        Ok(Project::new(
+        let include_path = match object.remove("include_path") {
+            None => None,
+            Some(object) => Some(PathBuf::from(object.to_string()?)),
+        };
+
+        Ok(Project {
             build_command,
             clean_command,
             path,
             output_path,
             install_path,
-        ))
-    }
-
-    fn new(
-        build_command: Option<super::command::Command>,
-        clean_command: Option<super::command::Command>,
-        path: PathBuf,
-        output_path: PathBuf,
-        install_path: PathBuf,
-    ) -> Self {
-        Project {
-            build_command: build_command,
-            clean_command: clean_command,
-            path: path,
-            output_path: output_path,
-            install_path: install_path,
-        }
+            include_path,
+        })
     }
 
     pub fn build(
@@ -92,6 +83,20 @@ impl Project {
         }
 
         std::fs::copy(output_path, target_path)?;
+
+        match &self.include_path {
+            Some(include_path) => {
+                let path = self.path.join(include_path);
+                let target_path = Path::new(crate::config::SYSROOT_DIR)
+                    .join(crate::config::INCLUDE_DIR)
+                    .join("..");
+                let mut command = std::process::Command::new("cp");
+                command.arg("-r");
+                command.args(&[path, target_path]);
+                command.spawn()?;
+            }
+            None => {}
+        }
 
         Ok(())
     }
