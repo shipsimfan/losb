@@ -1,6 +1,5 @@
 use std::path::Path;
 
-mod build;
 mod image;
 mod projects;
 
