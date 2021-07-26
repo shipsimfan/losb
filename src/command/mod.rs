@@ -103,14 +103,7 @@ fn run(configuration: &str) -> Result<(), Box<dyn std::error::Error>> {
     emulator_command.stdout(std::process::Stdio::inherit());
     emulator_command.stderr(std::process::Stdio::inherit());
     emulator_command.stdin(std::process::Stdio::inherit());
-    emulator_command.spawn()?;
-
-    let mut debugger_command = std::process::Command::new(crate::config::DEBUGGER);
-    debugger_command.args(crate::config::DEBUGGER_FLAGS);
-    debugger_command.stdout(std::process::Stdio::inherit());
-    debugger_command.stderr(std::process::Stdio::inherit());
-    debugger_command.stdin(std::process::Stdio::inherit());
-    debugger_command.output()?;
+    emulator_command.output()?;
 
     Ok(())
 }

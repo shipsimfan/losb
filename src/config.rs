@@ -13,8 +13,8 @@ pub const INCLUDE_DIR: &str = "los/include";
 
 // Programs
 pub const EMULATOR: &str = "qemu-system-x86_64";
-pub const EMULATOR_FLAGS: [&str; 6] = ["-bios", "OVMF.fd", "-hdd", "os.img", "-gdb", "tcp::1234"];
-pub const EMULATOR_DEBUG_FLAGS: [&str; 1] = ["-S"];
+pub const EMULATOR_FLAGS: [&str; 4] = ["-bios", "OVMF.fd", "-hdd", "os.img"];
+pub const EMULATOR_DEBUG_FLAGS: [&str; 3] = ["-S", "-gdb", "tcp::1234"];
 
 pub const DEBUGGER: &str = "gdb";
 pub const DEBUGGER_FLAGS: [&str; 4] = [
