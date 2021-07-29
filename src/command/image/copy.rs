@@ -1,3 +1,5 @@
+use crate::command::image::fat32::LongDirectoryEntry;
+
 use super::fat32;
 use std::{
     io::{Read, Seek, SeekFrom, Write},
@@ -81,6 +83,8 @@ impl Copier {
             )
         })?;
 
+        let mut numeric_tail_value = 1;
+
         for child in std::fs::read_dir(path)? {
             let child = child?;
 
@@ -137,37 +141,182 @@ impl Copier {
                 // Copy file
                 let (cluster, file_size) = self.copy_file(&child.path())?;
 
-                let mut name = [' ' as u8; 11];
-                let mut i = 0;
-                for c in child
-                    .path()
-                    .file_stem()
-                    .unwrap()
-                    .to_string_lossy()
-                    .as_bytes()
-                {
-                    if i >= 8 {
+                // Generate basis name
+                let child_path = child.path();
+                let filename = child_path.file_name().unwrap().to_str().unwrap();
+
+                let short_name = filename
+                    .to_ascii_uppercase()
+                    .replace(' ', "")
+                    .trim_start_matches('.')
+                    .to_string();
+
+                let mut basis_name = String::new();
+                for char in short_name.chars() {
+                    if basis_name.len() >= 8 || char == '.' {
                         break;
                     }
 
-                    name[i] = (*c).to_ascii_uppercase();
-                    i += 1;
+                    basis_name.push(char);
                 }
 
-                match child.path().extension() {
-                    None => {}
+                match child_path.extension() {
                     Some(extension) => {
-                        let mut i = 8;
-                        for c in extension.to_string_lossy().as_bytes() {
-                            if i >= 11 {
+                        basis_name.push('.');
+                        let mut i = 0;
+                        for char in extension.to_str().unwrap().chars() {
+                            if i >= 3 {
                                 break;
                             }
 
-                            name[i] = (*c).to_ascii_uppercase();
+                            basis_name.push(char.to_ascii_uppercase());
                             i += 1;
                         }
                     }
+                    None => {}
                 }
+
+                // Check to see if long filenames are nescessary
+                let mut name = [b' '; 11];
+                if child_path.file_stem().unwrap().len() > 8
+                    || match child_path.extension() {
+                        None => false,
+                        Some(extension) => extension.len() > 3,
+                    }
+                {
+                    // Generate numeric tail
+                    let numeric_tail = format!("~{}", numeric_tail_value);
+                    numeric_tail_value += 1;
+                    let mut i = 0;
+                    let end = 8 - numeric_tail.len();
+                    let mut iter = basis_name.chars();
+                    let mut reached_extension = false;
+                    while let Some(c) = iter.next() {
+                        if c == '.' {
+                            reached_extension = true;
+                            break;
+                        }
+
+                        if i >= end {
+                            break;
+                        }
+
+                        name[i] = c as u8;
+                        i += 1;
+                    }
+
+                    for c in numeric_tail.chars() {
+                        name[i] = c as u8;
+                        i += 1;
+                    }
+
+                    while i < 8 {
+                        name[i] = b' ';
+                        i += 1;
+                    }
+
+                    if !reached_extension {
+                        while let Some(c) = iter.next() {
+                            if c == '.' {
+                                break;
+                            }
+                        }
+                    }
+
+                    while let Some(c) = iter.next() {
+                        name[i] = c as u8;
+                        i += 1;
+                    }
+
+                    while i < 11 {
+                        name[i] = b' ';
+                        i += 1;
+                    }
+
+                    // Create long file name entries
+                    let num_entries = (filename.len() + 12) / 13;
+
+                    let checksum = {
+                        let mut sum: u8 = 0;
+                        for byte in name {
+                            sum = if sum & 1 != 0 { 0x80 } else { 0 } + sum.wrapping_shr(1) + byte;
+                        }
+
+                        sum
+                    };
+
+                    let mut current_entry = num_entries;
+                    let mut current_offset = (num_entries - 1) * 13;
+                    while current_entry > 0 {
+                        let long_entry = LongDirectoryEntry::new(
+                            &filename[current_offset..],
+                            if current_entry == num_entries {
+                                current_entry | 0x40
+                            } else {
+                                current_entry
+                            } as u8,
+                            checksum,
+                        );
+
+                        let entry = long_entry.as_entry();
+
+                        // Insert long filename entry
+                        if entry_index
+                            % (fat32::BYTES_PER_SECTOR
+                                / std::mem::size_of::<fat32::DirectoryEntry>())
+                            == 0
+                        {
+                            self.write_cluster(current_cluster, unsafe {
+                                std::slice::from_raw_parts(
+                                    &buffer as *const _ as *const u8,
+                                    fat32::BYTES_PER_SECTOR,
+                                )
+                            })?;
+                            current_cluster = self.allocate_cluster(current_cluster)?;
+                            self.read_cluster(current_cluster, unsafe {
+                                std::slice::from_raw_parts_mut(
+                                    &mut buffer as *mut _ as *mut u8,
+                                    fat32::BYTES_PER_SECTOR,
+                                )
+                            })?;
+                        }
+
+                        buffer[entry_index
+                            % (fat32::BYTES_PER_SECTOR
+                                / std::mem::size_of::<fat32::DirectoryEntry>())] = *entry;
+
+                        entry_index += 1;
+
+                        current_entry -= 1;
+                        current_offset -= 13;
+                    }
+                } else {
+                    let mut i = 0;
+                    let mut iter = basis_name.chars();
+                    while let Some(c) = iter.next() {
+                        if c == '.' {
+                            break;
+                        }
+
+                        name[i] = c as u8;
+                        i += 1;
+                    }
+
+                    while i < 8 {
+                        name[i] = b' ';
+                        i += 1;
+                    }
+
+                    while let Some(c) = iter.next() {
+                        name[i] = c as u8;
+                        i += 1;
+                    }
+
+                    while i < 11 {
+                        name[i] = b' ';
+                        i += 1;
+                    }
+                };
 
                 fat32::DirectoryEntry::new(name, 0, cluster, file_size as u32)
             };

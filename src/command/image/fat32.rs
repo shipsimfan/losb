@@ -59,6 +59,18 @@ pub struct DirectoryEntry {
     file_size: u32,
 }
 
+#[repr(packed(1))]
+pub struct LongDirectoryEntry {
+    order: u8,
+    name1: [u16; 5],
+    attr: u8,
+    class: u8,
+    checksum: u8,
+    name2: [u16; 6],
+    first_cluster_low: u16,
+    name3: [u16; 2],
+}
+
 pub const BYTES_PER_SECTOR: usize = 512;
 
 pub const RESERVED_SECTOR_COUNT: usize = 32;
@@ -197,5 +209,57 @@ impl DirectoryEntry {
             write_date: 0,
             file_size: 0,
         }
+    }
+}
+
+impl LongDirectoryEntry {
+    pub fn new(name: &str, order: u8, checksum: u8) -> Self {
+        let mut name_arr = [0u16; 13];
+        let mut i = 0;
+        for c in name.chars() {
+            if i >= 13 {
+                break;
+            }
+
+            name_arr[i] = c as u16;
+            i += 1;
+        }
+
+        if i < 13 {
+            name_arr[i] = 0;
+            i += 1;
+            while i < 13 {
+                name_arr[i] = 0xFFFF;
+                i += 1;
+            }
+        }
+
+        LongDirectoryEntry {
+            order,
+            name1: [
+                name_arr[0],
+                name_arr[1],
+                name_arr[2],
+                name_arr[3],
+                name_arr[4],
+            ],
+            attr: ATTR_LONG_NAME,
+            class: 0,
+            checksum,
+            name2: [
+                name_arr[5],
+                name_arr[6],
+                name_arr[7],
+                name_arr[8],
+                name_arr[9],
+                name_arr[10],
+            ],
+            first_cluster_low: 0,
+            name3: [name_arr[11], name_arr[12]],
+        }
+    }
+
+    pub fn as_entry(&self) -> &DirectoryEntry {
+        unsafe { std::mem::transmute(self) }
     }
 }
