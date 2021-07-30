@@ -15,5 +15,5 @@ pub fn volume_size(directory_path: &Path) -> Result<usize, Box<dyn std::error::E
     );
 
     // TEMPORARY: returns the minimum volume size of 64 MB
-    Ok(128 * 1024 * 1024)
+    Ok(64 * 1024 * 1024)
 }
