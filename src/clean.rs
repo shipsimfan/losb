@@ -28,17 +28,17 @@ fn clean_build(path: &str) -> Result<(), Box<dyn std::error::Error>> {
 
 pub fn clean_user() -> Result<(), Box<dyn std::error::Error>> {
     // Remove sysroot
-    println!("Cleaning sysroot . . .");
+    println!("    \x1B[32;1mCleaning\x1B[0m sysroot . . .");
     if Path::new("./sysroot").exists() {
         remove_dir_all("./sysroot")?;
     }
 
     // Clean libraries
-    println!("Cleaning libraries . . .");
+    println!("    \x1B[32;1mCleaning\x1B[0m libraries . . .");
     clean_build("./libraries")?;
 
     // Clean programs
-    println!("Cleaning programs . . .");
+    println!("    \x1B[32;1mCleaning\x1B[0m programs . . .");
     clean_build("./programs")?;
 
     Ok(())
@@ -46,11 +46,11 @@ pub fn clean_user() -> Result<(), Box<dyn std::error::Error>> {
 
 pub fn clean() -> Result<(), Box<dyn std::error::Error>> {
     // Clean bootloader
-    println!("Cleaning bootloader . . .");
+    println!("    \x1B[32;1mCleaning\x1B[0m bootloader . . .");
     clean_cargo("./bootloader")?;
 
     // Clean kernel
-    println!("Cleaning kernel . . .");
+    println!("    \x1B[32;1mCleaning\x1B[0m kernel . . .");
     clean_cargo("./kernel")?;
 
     // Clean user

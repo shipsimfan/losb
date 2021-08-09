@@ -45,22 +45,22 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
     create_dir_all("./sysroot/EFI/BOOT")?;
 
     // Build bootloader
-    println!("Building bootloader . . .");
+    println!("    \x1B[32;1mBuilding\x1B[0m bootloader . . .");
     build_cargo("./bootloader")?;
 
     // Install bootloader
-    println!("\nInstalling bootloader . . .");
+    println!("\n  \x1B[32;1mInstalling\x1B[0m bootloader . . .");
     copy(
         "./bootloader/target/x86_64-unknown-uefi/debug/bootloader.efi",
         "./sysroot/EFI/BOOT/BOOTX64.EFI",
     )?;
 
     // Build kernel
-    println!("\nBuilding kernel . . .");
+    println!("\n    \x1B[32;1mBuilding\x1B[0m kernel . . .");
     build_cargo("./kernel")?;
 
     // Install kernel
-    println!("\nInstalling kernel . . .");
+    println!("\n  \x1B[32;1mInstalling\x1B[0m kernel . . .");
     copy(
         "./kernel/target/x86_64-los/debug/kernel",
         "./sysroot/kernel.elf",
@@ -72,11 +72,11 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
     let sysroot = current_path.join("sysroot");
 
     // Build and install libraries
-    println!("\nBuilding libraries . . .");
+    println!("\n    \x1B[32;1mBuilding\x1B[0m libraries . . .");
     install_build("./libraries", &prefix, &sysroot)?;
 
     // Build and install programs
-    println!("\nBuilding programs . . .");
+    println!("\n    \x1B[32;1mBuilding\x1B[0m programs . . .");
     install_build("./programs", &prefix, &sysroot)?;
 
     Ok(())
