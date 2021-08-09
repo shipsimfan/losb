@@ -1,4 +1,4 @@
-use crate::command::image::fat32::LongDirectoryEntry;
+use super::fat32::LongDirectoryEntry;
 
 use super::fat32;
 use std::{

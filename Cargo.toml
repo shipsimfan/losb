@@ -1,7 +1,4 @@
 [package]
 edition = "2018"
 name = "losb"
-version = "0.1.0"
-
-[dependencies]
-json = {git = "https://github.com/shipsimfan/lib-json", branch = "main"}
+version = "0.2.0"

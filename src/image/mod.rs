@@ -5,7 +5,9 @@ mod copy;
 mod create;
 mod fat32;
 
-pub fn create_image() -> Result<(), Box<dyn std::error::Error>> {
+pub fn build_image() -> Result<(), Box<dyn std::error::Error>> {
+    crate::build::build()?;
+
     println!();
     let sysroot_path = Path::new(crate::config::SYSROOT_DIR);
     let target_path = Path::new(crate::config::TARGET_IMG);
