@@ -79,5 +79,13 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
     println!("\n    \x1B[32;1mBuilding\x1B[0m programs . . .");
     install_build("./programs", &prefix, &sysroot)?;
 
+    // Copy core libraries to rustlib
+    create_dir_all("./sysroot/los/lib/rustlib/x86_64-los/lib")?;
+    copy("./sysroot/los/lib/crt0.o", "./sysroot/los/lib/rustlib/x86_64-los/lib/crt0.o")?;
+    copy("./sysroot/los/lib/crti.o", "./sysroot/los/lib/rustlib/x86_64-los/lib/crti.o")?;
+    copy("./sysroot/los/lib/crtn.o", "./sysroot/los/lib/rustlib/x86_64-los/lib/crtn.o")?;
+    copy("./sysroot/los/lib/libkernel.a", "./sysroot/los/lib/rustlib/x86_64-los/lib/libkernel.a")?;
+    copy("./sysroot/los/lib/libc.a", "./sysroot/los/lib/rustlib/x86_64-los/lib/libc.a")?;
+
     Ok(())
 }
