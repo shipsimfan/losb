@@ -15,8 +15,8 @@ fn clean_cargo(path: &str) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn clean_build(path: &str) -> Result<(), Box<dyn std::error::Error>> {
-    let mut command = Command::new("build");
+fn clean_brew(path: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let mut command = Command::new("brew");
     command.arg("clean");
     command.current_dir(path);
     command.stdout(Stdio::inherit());
@@ -35,11 +35,11 @@ pub fn clean_user() -> Result<(), Box<dyn std::error::Error>> {
 
     // Clean libraries
     println!("    \x1B[32;1mCleaning\x1B[0m libraries . . .");
-    clean_build("./libraries")?;
+    clean_brew("./libraries")?;
 
     // Clean programs
     println!("    \x1B[32;1mCleaning\x1B[0m programs . . .");
-    clean_build("./programs")?;
+    clean_brew("./programs")?;
 
     Ok(())
 }
