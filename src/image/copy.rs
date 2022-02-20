@@ -15,10 +15,7 @@ struct Copier {
     next_cluster: u32,
 }
 
-pub fn copy_directory(
-    target_image: &Path,
-    source_path: &Path,
-) -> Result<(), Box<dyn std::error::Error>> {
+pub fn copy_directory(target_image: &Path, source_path: &Path) -> Result<(), std::io::Error> {
     print!(
         "     \x1B[36;1mCopying\x1B[0m {} into {} . . .",
         source_path.to_string_lossy(),
@@ -36,7 +33,7 @@ pub fn copy_directory(
 }
 
 impl Copier {
-    pub fn new(filepath: &Path) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn new(filepath: &Path) -> Result<Self, std::io::Error> {
         // Read the BPB
         let mut target_file = std::fs::OpenOptions::new()
             .read(true)
@@ -70,7 +67,7 @@ impl Copier {
         path: &Path,
         first_cluster: u32,
         first_index: usize,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), std::io::Error> {
         let mut entry_index = first_index;
         let mut current_cluster = first_cluster;
         let mut buffer = [fat32::DirectoryEntry::zero();
@@ -354,7 +351,7 @@ impl Copier {
         Ok(())
     }
 
-    fn copy_file(&mut self, path: &Path) -> Result<(u32, usize), Box<dyn std::error::Error>> {
+    fn copy_file(&mut self, path: &Path) -> Result<(u32, usize), std::io::Error> {
         let file_data = std::fs::read(path)?;
         let num_clusters =
             (file_data.len() + fat32::BYTES_PER_SECTOR - 1) / fat32::BYTES_PER_SECTOR;
@@ -384,11 +381,7 @@ impl Copier {
         Ok((first_cluster, file_data.len()))
     }
 
-    fn write_cluster(
-        &mut self,
-        cluster: u32,
-        buffer: &[u8],
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    fn write_cluster(&mut self, cluster: u32, buffer: &[u8]) -> Result<(), std::io::Error> {
         let sector = cluster - 2 + self.first_data_sector as u32;
         self.file.seek(SeekFrom::Start(
             (sector * fat32::BYTES_PER_SECTOR as u32) as u64,
@@ -397,11 +390,7 @@ impl Copier {
         Ok(())
     }
 
-    fn read_cluster(
-        &mut self,
-        cluster: u32,
-        buffer: &mut [u8],
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    fn read_cluster(&mut self, cluster: u32, buffer: &mut [u8]) -> Result<(), std::io::Error> {
         let sector = cluster - 2 + self.first_data_sector as u32;
         self.file.seek(SeekFrom::Start(
             (sector * fat32::BYTES_PER_SECTOR as u32) as u64,
@@ -410,10 +399,7 @@ impl Copier {
         Ok(())
     }
 
-    fn allocate_cluster(
-        &mut self,
-        previous_cluster: u32,
-    ) -> Result<u32, Box<dyn std::error::Error>> {
+    fn allocate_cluster(&mut self, previous_cluster: u32) -> Result<u32, std::io::Error> {
         let mut i = 0;
         let mut buffer = [0u8; fat32::BYTES_PER_SECTOR];
 

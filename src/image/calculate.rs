@@ -1,7 +1,7 @@
 use std::path::Path;
 
 // Calculates the volume size in bytes of the volume needed to hold the directory
-pub fn volume_size(directory_path: &Path) -> Result<usize, Box<dyn std::error::Error>> {
+pub fn volume_size(directory_path: &Path) -> Result<usize, ()> {
     print!(
         " \x1B[36;1mCalculating\x1B[0m volume size for {} . . .",
         directory_path.to_string_lossy()
@@ -14,6 +14,6 @@ pub fn volume_size(directory_path: &Path) -> Result<usize, Box<dyn std::error::E
         directory_path.to_string_lossy()
     );
 
-    // TEMPORARY: returns the minimum volume size of 64 MB
+    // TEMPORARY: returns the minimum volume size of 128 MB
     Ok(128 * 1024 * 1024)
 }

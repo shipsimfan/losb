@@ -12,8 +12,11 @@ pub enum Command {
     Version,
 }
 
+#[derive(Debug)]
+pub struct InvalidCommand(String);
+
 impl Command {
-    pub fn parse(command: &str) -> Result<Self, crate::Error> {
+    pub fn parse(command: &str) -> Result<Self, InvalidCommand> {
         match command.to_lowercase().as_str() {
             "build" => Ok(Command::Build),
             "build-image" => Ok(Command::BuildImage),
@@ -25,7 +28,7 @@ impl Command {
             "run" => Ok(Command::Run),
             "vbox" => Ok(Command::VBox),
             "version" => Ok(Command::Version),
-            _ => Err(crate::Error::InvalidCommand(command.to_string())),
+            _ => Err(InvalidCommand(command.to_string())),
         }
     }
 }
@@ -48,5 +51,19 @@ impl std::fmt::Display for Command {
                 Command::Version => "version",
             }
         )
+    }
+}
+
+impl std::error::Error for InvalidCommand {}
+
+impl std::fmt::Display for InvalidCommand {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "Invalid command ({})", self.0)
+    }
+}
+
+impl Into<String> for InvalidCommand {
+    fn into(self) -> String {
+        self.0
     }
 }

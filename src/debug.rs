@@ -1,4 +1,13 @@
-pub fn debug() -> Result<(), Box<dyn std::error::Error>> {
+use std::fmt::Debug;
+
+#[derive(Debug)]
+pub enum DebugError {
+    BuildError(crate::image::BuildImageError),
+    Emulator(std::io::Error),
+    Debugger(std::io::Error),
+}
+
+pub fn debug() -> Result<(), DebugError> {
     crate::image::build_image()?;
 
     let mut emulator_command = std::process::Command::new(crate::config::EMULATOR);
@@ -7,14 +16,40 @@ pub fn debug() -> Result<(), Box<dyn std::error::Error>> {
     emulator_command.stdout(std::process::Stdio::inherit());
     emulator_command.stderr(std::process::Stdio::inherit());
     emulator_command.stdin(std::process::Stdio::inherit());
-    emulator_command.spawn()?;
+    let mut emulator = match emulator_command.spawn() {
+        Ok(child) => child,
+        Err(error) => return Err(DebugError::Emulator(error)),
+    };
 
     let mut debugger_command = std::process::Command::new(crate::config::DEBUGGER);
     debugger_command.args(crate::config::DEBUGGER_FLAGS);
-    debugger_command.stdout(std::process::Stdio::inherit());
-    debugger_command.stderr(std::process::Stdio::inherit());
-    debugger_command.stdin(std::process::Stdio::inherit());
-    debugger_command.output()?;
+    match debugger_command.status() {
+        Ok(_) => Ok(()),
+        Err(error) => {
+            emulator.kill().ok(); // Doesn't matter if it actually exits properly
+            Err(DebugError::Debugger(error))
+        }
+    }
+}
 
-    Ok(())
+impl std::error::Error for DebugError {}
+
+impl std::fmt::Display for DebugError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                DebugError::BuildError(error) => format!("{}", error),
+                DebugError::Emulator(error) => format!("Unable to launch emulator ({})", error),
+                DebugError::Debugger(error) => format!("Unable to launch debugger ({})", error),
+            }
+        )
+    }
+}
+
+impl From<crate::image::BuildImageError> for DebugError {
+    fn from(error: crate::image::BuildImageError) -> Self {
+        DebugError::BuildError(error)
+    }
 }

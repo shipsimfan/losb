@@ -7,7 +7,7 @@ use std::{
 fn write_boot_sector(
     file: &mut std::fs::File,
     bpb: &fat32::BIOSParameterBlock,
-) -> Result<(), Box<dyn std::error::Error>> {
+) -> Result<(), std::io::Error> {
     file.write(unsafe {
         std::slice::from_raw_parts(
             bpb as *const _ as *const u8,
@@ -27,7 +27,7 @@ fn write_boot_sector(
 fn write_root_directory(
     file: &mut std::fs::File,
     bpb: &fat32::BIOSParameterBlock,
-) -> Result<(), Box<dyn std::error::Error>> {
+) -> Result<(), std::io::Error> {
     // Write FAT entries
     let mut i = 0;
     while i < bpb.num_fats() {
@@ -59,7 +59,7 @@ fn write_root_directory(
     Ok(())
 }
 
-pub fn create_image(volume_size: usize, target: &Path) -> Result<(), Box<dyn std::error::Error>> {
+pub fn create_image(volume_size: usize, target: &Path) -> Result<(), std::io::Error> {
     print!(
         "    \x1B[36;1mCreating\x1B[0m {} ({} MB) . . .",
         target.to_string_lossy(),

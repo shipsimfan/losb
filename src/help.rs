@@ -1,6 +1,6 @@
 use crate::command::Command;
 
-pub fn display_help() -> Result<(), Box<dyn std::error::Error>> {
+pub fn display_help() {
     println!("Build utility for Lance OS\n");
 
     println!("\x1B[1mUsage:\x1B[0m");
@@ -50,6 +50,4 @@ pub fn display_help() -> Result<(), Box<dyn std::error::Error>> {
 
     println!();
     println!("Default Command - {}", crate::config::DEFAULT_COMMAND);
-
-    Ok(())
 }
