@@ -86,7 +86,7 @@ pub fn build() -> Result<(), BuildError> {
     // Install kernel
     println!("\n  \x1B[32;1mInstalling\x1B[0m kernel . . .");
     install(
-        "./kernel/target/x86_64-los/debug/kernel",
+        "./kernel/target/x86_64-los/debug/init",
         "./sysroot/kernel.elf",
     )?;
 
