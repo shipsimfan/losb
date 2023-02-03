@@ -1,4 +1,10 @@
-use crate::args::ArgumentError;
+use crate::{
+    args::{ArgumentError, Options},
+    output::Output,
+    tools::ToolError,
+};
+
+mod build;
 
 #[derive(Clone, Copy)]
 pub enum Command {
@@ -43,6 +49,15 @@ impl Command {
             "clean-kernel" => Command::CleanKernel,
             _ => return Err(ArgumentError::UnknownCommand(command.to_owned())),
         })
+    }
+
+    pub fn execute(&self, options: &Options, output: &Output) -> Result<(), ToolError> {
+        match self {
+            Command::BuildAll => build::build_all(options, output),
+            Command::BuildBootloader => build::build_bootloader(options, output),
+            Command::BuildKernel => build::build_kernel(options, output),
+            _ => panic!("TODO: Implement"),
+        }
     }
 }
 

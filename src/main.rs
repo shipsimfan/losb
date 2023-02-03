@@ -1,21 +1,25 @@
+use output::Output;
+
 mod args;
 mod commands;
+mod output;
+mod tools;
 
-fn run() -> Result<(), Box<dyn std::error::Error>> {
+fn run(output: &Output) -> Result<(), Box<dyn std::error::Error>> {
     // Parse arguments
     let options = args::parse_args()?;
 
     // Execute command
-    match options.command() {
-        _ => panic!("TODO: Implement"),
-    }
+    Ok(options.command().execute(&options, output)?)
 }
 
 fn main() {
-    match run() {
+    let output = Output::new();
+
+    match run(&output) {
         Ok(()) => {}
         Err(error) => {
-            eprintln!("Error: {}", error);
+            output.log_error(error.as_ref());
             std::process::exit(1);
         }
     }

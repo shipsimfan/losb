@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use crate::commands::Command;
 use argparse::ArgumentParser;
 
@@ -21,7 +23,15 @@ pub fn parse_args() -> Result<Options, Box<dyn std::error::Error>> {
             Ok(options.set_command(Command::parse(&args[0])?))
         })
         .help("The command to execute")
-        .required(true)
+        .required(false)
+        .count(1);
+    parser
+        .add_argument("--path", |args, options| {
+            Ok(options.set_path(PathBuf::from(&args[0])))
+        })
+        .name("-p")
+        .help("Sets the base path to build from")
+        .required(false)
         .count(1);
 
     // Parse arguments
