@@ -1,10 +1,11 @@
 use crate::{
     args::{ArgumentError, Options},
     output::Output,
-    tools::ToolError,
 };
 
 mod build;
+mod install;
+mod names;
 
 #[derive(Clone, Copy)]
 pub enum Command {
@@ -12,6 +13,11 @@ pub enum Command {
     BuildAll,
     BuildBootloader,
     BuildKernel,
+
+    // Install Commands
+    InstallAll,
+    InstallBootloader,
+    InstallKernel,
 
     // Create Image Commands
     CreateIMG,
@@ -35,6 +41,11 @@ impl Command {
             "build-boot" | "build-bootloader" => Command::BuildBootloader,
             "build-kernel" => Command::BuildKernel,
 
+            // Install Commands
+            "install" | "install-all" => Command::InstallAll,
+            "install-boot" | "install-bootloader" => Command::InstallBootloader,
+            "install-kernel" => Command::InstallKernel,
+
             // Create Image Commands
             "img" | "create-img" => Command::CreateIMG,
             "iso" | "create-iso" => Command::CreateISO,
@@ -51,13 +62,24 @@ impl Command {
         })
     }
 
-    pub fn execute(&self, options: &Options, output: &Output) -> Result<(), ToolError> {
-        match self {
-            Command::BuildAll => build::build_all(options, output),
-            Command::BuildBootloader => build::build_bootloader(options, output),
-            Command::BuildKernel => build::build_kernel(options, output),
+    pub fn execute(
+        &self,
+        options: &Options,
+        output: &Output,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        Ok(match self {
+            // Build Commands
+            Command::BuildAll => build::build_all(options, output)?,
+            Command::BuildBootloader => build::build_bootloader(options, output)?,
+            Command::BuildKernel => build::build_kernel(options, output)?,
+
+            // Install Commands
+            Command::InstallAll => install::install_all(options, output)?,
+            Command::InstallBootloader => install::install_bootloader(options, output)?,
+            Command::InstallKernel => install::install_kernel(options, output)?,
+
             _ => panic!("TODO: Implement"),
-        }
+        })
     }
 }
 
