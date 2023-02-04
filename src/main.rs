@@ -1,3 +1,5 @@
+#![feature(int_roundings)]
+
 use output::Output;
 
 mod args;

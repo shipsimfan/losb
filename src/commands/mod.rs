@@ -4,6 +4,7 @@ use crate::{
 };
 
 mod build;
+mod create_image;
 mod install;
 mod names;
 
@@ -77,6 +78,9 @@ impl Command {
             Command::InstallAll => install::install_all(options, output)?,
             Command::InstallBootloader => install::install_bootloader(options, output)?,
             Command::InstallKernel => install::install_kernel(options, output)?,
+
+            // Create Image Commands
+            Command::CreateIMG => create_image::create_image(options, output)?,
 
             _ => panic!("TODO: Implement"),
         })

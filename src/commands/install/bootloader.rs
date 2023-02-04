@@ -1,4 +1,4 @@
-use super::{error::InstallError, install_file};
+use super::install_file;
 use crate::{
     args::Options,
     commands::{build::build_bootloader, names::BOOTLOADER_NAME},
