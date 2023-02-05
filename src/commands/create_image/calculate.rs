@@ -13,7 +13,7 @@ pub fn calculate_fat_size(options: &Options) -> Result<usize, CreateImageError> 
 
     let clusters = calculate_directory(options.sysroot(), true, options)? + extra_clusters + 2;
 
-    let clusters_per_fat_sector = options.sector_size() / 4;
+    let clusters_per_fat_sector = options.sector_size() as usize / 4;
 
     Ok(if clusters < MINIMUM_CLUSTERS {
         MINIMUM_CLUSTERS
@@ -24,11 +24,11 @@ pub fn calculate_fat_size(options: &Options) -> Result<usize, CreateImageError> 
 }
 
 fn bytes_to_clusters(bytes: usize, options: &Options) -> usize {
-    sectors_to_clusters(bytes.div_ceil(options.sector_size()), options)
+    sectors_to_clusters(bytes.div_ceil(options.sector_size() as usize), options)
 }
 
 fn sectors_to_clusters(sectors: usize, options: &Options) -> usize {
-    sectors.div_ceil(options.sectors_per_cluster())
+    sectors.div_ceil(options.sectors_per_cluster() as usize)
 }
 
 // Calculate the number of clusters a given directory requires
@@ -76,10 +76,7 @@ fn calculate_directory(
     }
 
     // Add clusters used by entries
-    clusters += (((bytes + options.sector_size() - 1) / options.sector_size())
-        + options.sectors_per_cluster()
-        - 1)
-        / options.sectors_per_cluster();
+    clusters += bytes_to_clusters(bytes, options);
 
     Ok(clusters)
 }

@@ -18,13 +18,33 @@ pub fn write_directory(
     root: bool,
 ) -> Result<Cluster, CreateImageError> {
     // Create the directory builder
-    let builder = DirectoryBuilder::new(path)?;
+    let mut builder = DirectoryBuilder::new(path)?;
 
     if !root {
         // Add "." and ".." entries
     }
 
     // Write each entry
+    while let Some(entry) = builder.next()? {
+        let path = entry.path();
+
+        let (cluster, directory) = if entry
+            .file_type()
+            .map_err(|error| CreateImageError::ReadError(path.clone(), error))?
+            .is_dir()
+        {
+            (write_directory(writer, path, false)?, true)
+        } else {
+            let cluster = writer.write(
+                &std::fs::read(&path).map_err(|error| CreateImageError::ReadError(path, error))?,
+            )?;
+            (cluster, false)
+        };
+
+        // Create entry
+
+        // Push entry
+    }
 
     // Write the directory clusters
     writer.write(&builder.generate_clusters())
@@ -38,7 +58,13 @@ impl DirectoryBuilder {
     }
 
     pub fn next(&mut self) -> Result<Option<DirEntry>, CreateImageError> {
-        panic!("TODO: Implement")
+        match self.read_dir.next() {
+            Some(result) => match result {
+                Ok(entry) => Ok(Some(entry)),
+                Err(error) => Err(CreateImageError::ReadError(self.path.clone(), error)),
+            },
+            None => Ok(None),
+        }
     }
 
     pub fn push_entry(&mut self, entry: DirectoryEntry) {
