@@ -1,5 +1,4 @@
 use self::writer::FileWriter;
-
 use super::install::install_all;
 use crate::{args::Options, output::Output};
 
@@ -7,6 +6,8 @@ mod bpb;
 mod calculate;
 mod directory;
 mod error;
+mod file;
+mod fs_info;
 mod writer;
 
 type Cluster = u32;
@@ -21,8 +22,9 @@ pub fn create_image(options: &Options, output: &Output) -> Result<(), Box<dyn st
 
     // Construct filesystem
     let mut writer = FileWriter::new(fat_size, options)?;
-    let root_cluster = directory::write_directory(&mut writer, options.sysroot().to_owned(), true)?;
-    writer.set_root_cluster(root_cluster);
+    let root_cluster =
+        directory::write_root_directory(&mut writer, options.sysroot().to_owned(), options)?;
+    writer.finalize(root_cluster)?;
 
     Ok(())
 }

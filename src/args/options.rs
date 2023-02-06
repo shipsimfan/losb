@@ -96,15 +96,18 @@ impl Options {
         self.release = true;
     }
 
+    // TODO: Add to arguments
     pub(super) fn set_output_path(&mut self, output_path: PathBuf) {
         self.output_path = output_path;
     }
 
+    // TODO: Add to arguments
     pub(super) fn set_sector_size(&mut self, sector_size: u16) {
         assert!([512, 1024, 2048, 4096].contains(&sector_size));
         self.sector_size = sector_size;
     }
 
+    // TODO: Add to arguments
     pub(super) fn set_sectors_per_cluster(&mut self, sectors_per_cluster: u8) {
         assert_ne!(sectors_per_cluster, 0);
         assert!(sectors_per_cluster.is_power_of_two());
@@ -113,25 +116,30 @@ impl Options {
         // TODO: Add a warning if the sectors_per_cluster * bytes_per_sector > 32 * 1024
     }
 
+    // TODO: Add to arguments
     pub(super) fn set_reserved_sectors(&mut self, reserved_sectors: u16) {
         assert!(reserved_sectors >= 2);
         self.reserved_sectors = reserved_sectors;
     }
 
+    // TODO: Add to arguments
     pub(super) fn set_num_fats(&mut self, num_fats: u8) {
         assert_ne!(num_fats, 0);
         // TODO: Add warning if the FAT number is not 2
         self.num_fats = num_fats;
     }
 
+    // TODO: Add to arguments
     pub(super) fn set_fixed_media(&mut self) {
         self.fixed_media = true;
     }
 
+    // TODO: Add to arguments
     pub(super) fn set_removable_media(&mut self) {
         self.fixed_media = false;
     }
 
+    // TODO: Add to arguments
     pub(super) fn set_volume_id(&mut self, volume_id: u32) {
         self.volume_id = volume_id;
     }

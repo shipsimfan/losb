@@ -7,6 +7,10 @@ const EXTRA_FREE_SPACE: usize = 32 * 1024 * 1024; // 32 MB of extra free space
 
 const DIRECTORY_ENTRY_SIZE: usize = 32;
 
+pub const ILLEGAL_SHORT_CHARACTERS: &[u8] = &[
+    0x22, 0x2A, 0x2B, 0x2C, 0x2E, 0x2F, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F, 0x5B, 0x5C, 0x5D, 0x7C,
+];
+
 // Returns the number of sectors the FAT occupies
 pub fn calculate_fat_size(options: &Options) -> Result<usize, CreateImageError> {
     let extra_clusters = bytes_to_clusters(EXTRA_FREE_SPACE, options);
@@ -52,10 +56,24 @@ fn calculate_directory(
         let entry =
             entry.map_err(|error| CreateImageError::CalculateError(path.to_owned(), error))?;
 
-        // TODO: Calculate if the entry needs a long name
-        bytes += DIRECTORY_ENTRY_SIZE;
-
         let path = entry.path();
+
+        let file_name = match path.file_name() {
+            Some(file_name) => file_name.to_string_lossy(),
+            None => {
+                // TODO: Add warning for unnamed file
+                continue;
+            }
+        };
+
+        bytes += DIRECTORY_ENTRY_SIZE
+            * match calculate_name_entries(file_name.as_bytes()) {
+                Some(entries) => entries,
+                None => {
+                    // TODO: Add warning for invalid filename
+                    continue;
+                }
+            };
 
         // Calculate entry clusters
         clusters += if entry
@@ -79,4 +97,39 @@ fn calculate_directory(
     clusters += bytes_to_clusters(bytes, options);
 
     Ok(clusters)
+}
+
+// TODO: Allow long filenames
+//  This will also allow filenames with different cases
+fn calculate_name_entries(name: &[u8]) -> Option<usize> {
+    let mut stem_length = 0;
+    let mut extension_length = 0;
+    let mut extension = false;
+
+    for c in name {
+        if stem_length == 0 && (*c == b'.' || *c == b'.') {
+            return None;
+        }
+
+        if !extension && *c == b'.' {
+            extension = true;
+            continue;
+        }
+
+        if ILLEGAL_SHORT_CHARACTERS.contains(c) {
+            return None;
+        }
+
+        if extension {
+            extension_length += 1;
+        } else {
+            stem_length += 1;
+        }
+    }
+
+    if stem_length == 0 || stem_length > 8 || extension_length > 3 {
+        None
+    } else {
+        Some(1)
+    }
 }
