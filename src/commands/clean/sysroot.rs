@@ -6,10 +6,10 @@ pub struct CleanError(std::io::Error);
 pub fn clean_sysroot(options: &Options) -> Result<(), CleanError> {
     options.output().log_cleaning("sysroot");
     if options.sysroot().exists() {
-        std::fs::remove_dir_all(options.sysroot()).map_err(|error| CleanError(error))
-    } else {
-        Ok(())
+        std::fs::remove_dir_all(options.sysroot()).map_err(|error| CleanError(error))?;
     }
+    options.output().log_finished("cleaning", "sysroot");
+    Ok(())
 }
 
 impl std::error::Error for CleanError {}

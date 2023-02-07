@@ -17,7 +17,7 @@ pub fn install_bootloader(options: &Options) -> Result<(), Box<dyn std::error::E
     build_bootloader(options)?;
 
     options.output().log_installing(BOOTLOADER_NAME);
-    Ok(install_file(
+    install_file(
         if options.is_release() {
             BOOTLOADER_RELEASE_PATH
         } else {
@@ -26,5 +26,8 @@ pub fn install_bootloader(options: &Options) -> Result<(), Box<dyn std::error::E
         BOOTLOADER_DESTINATION_PATH,
         BOOTLOADER_FILENAME,
         options,
-    )?)
+    )?;
+    options.output().log_finished("installing", BOOTLOADER_NAME);
+
+    Ok(())
 }

@@ -10,10 +10,13 @@ pub fn install_kernel(options: &Options) -> Result<(), Box<dyn std::error::Error
     build_kernel(options)?;
 
     options.output().log_installing(KERNEL_NAME);
-    Ok(install_file(
+    install_file(
         kernel_path(options),
         KERNEL_SYSROOT_PATH,
         KERNEL_FILENAME,
         options,
-    )?)
+    )?;
+    options.output().log_finished("installing", KERNEL_NAME);
+
+    Ok(())
 }

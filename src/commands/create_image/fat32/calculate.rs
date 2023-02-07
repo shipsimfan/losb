@@ -41,11 +41,12 @@ pub fn calculate_fat_size(options: &Options) -> Result<usize, CreateImageError> 
 
     let clusters = calculate_directory(options.sysroot(), true, options)? + extra_clusters + 2;
 
-    Ok(if clusters < MINIMUM_CLUSTERS {
+    Ok((if clusters < MINIMUM_CLUSTERS {
         MINIMUM_CLUSTERS
     } else {
         clusters
     } * CLUSTER_SIZE)
+        .next_multiple_of(options.sector_size() as usize))
 }
 
 // Calculate the number of clusters a given directory requires

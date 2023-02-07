@@ -42,13 +42,10 @@ impl<'a, 'b> FileWriter<'a, 'b> {
         // Zero the FATs
         let fat_offset = options.reserved_sectors() as usize * options.sector_size() as usize;
         output.seek(fat_offset)?;
-        output
-            .write_zeros(fat_size * options.sector_size() as usize * options.num_fats() as usize)?;
+        output.write_zeros(fat_size * options.num_fats() as usize)?;
 
         // Setup the writer
         output.seek(fat_offset)?;
-        let clusters_per_fat_sector =
-            options.sector_size() as usize / std::mem::size_of::<Cluster>();
         let mut writer = FileWriter {
             output,
             options,
@@ -56,10 +53,9 @@ impl<'a, 'b> FileWriter<'a, 'b> {
             fat_size,
             current_offset: fat_offset,
             next_free_cluster: 0,
-            free_count: fat_size * clusters_per_fat_sector,
+            free_count: fat_size / std::mem::size_of::<Cluster>(),
 
-            first_data_sector: fat_offset
-                + options.num_fats() as usize * fat_size * options.sector_size() as usize,
+            first_data_sector: fat_offset + options.num_fats() as usize * fat_size,
             cluster_size: options.sector_size() as usize * options.sectors_per_cluster() as usize,
         };
 

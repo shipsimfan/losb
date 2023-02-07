@@ -23,7 +23,9 @@ pub fn build<P: AsRef<Path>>(name: &str, path: P, options: &Options) -> Result<(
 pub fn clean<P: AsRef<Path>>(name: &str, path: P, options: &Options) -> Result<(), ToolError> {
     options.output().log_cleaning(name);
     let command = create_command(path, options, CargoCommand::Clean);
-    run_command(command)
+    run_command(command)?;
+    options.output().log_finished("cleaning", name);
+    Ok(())
 }
 
 fn create_command<P: AsRef<Path>>(

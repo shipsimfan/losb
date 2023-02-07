@@ -24,5 +24,7 @@ pub fn create_image(options: &Options) -> Result<(), Box<dyn std::error::Error>>
         directory::write_root_directory(&mut writer, options.sysroot().to_owned(), options)?;
     writer.finalize(root_cluster)?;
 
+    options.output().log_finished("creating", "image");
+
     Ok(())
 }

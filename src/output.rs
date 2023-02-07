@@ -29,6 +29,10 @@ impl Output {
         self.log_custom("Cleaning", name, true, true);
     }
 
+    pub fn log_finished(&self, verb: &str, name: &str) {
+        self.log_custom("Finished", &format!("{} {}", verb, name), false, false);
+    }
+
     pub fn log_custom(&self, verb: &str, content: &str, header: bool, dots: bool) {
         if header && !self.first.swap(false, Ordering::AcqRel) {
             println!();
