@@ -1,12 +1,14 @@
-use crate::{
-    args::{ArgumentError, Options},
-    output::Output,
-};
+use crate::args::{ArgumentError, Options};
 
 mod build;
+mod clean;
 mod create_image;
 mod install;
-mod names;
+mod run;
+
+pub mod common;
+
+pub(self) use common::*;
 
 #[derive(Clone, Copy)]
 pub enum Command {
@@ -22,7 +24,6 @@ pub enum Command {
 
     // Create Image Commands
     CreateIMG,
-    CreateISO,
 
     // Execute Commands
     Run,
@@ -30,6 +31,7 @@ pub enum Command {
 
     // Clean Commands
     CleanAll,
+    CleanSysroot,
     CleanBootloader,
     CleanKernel,
 }
@@ -49,7 +51,6 @@ impl Command {
 
             // Create Image Commands
             "img" | "create-img" => Command::CreateIMG,
-            "iso" | "create-iso" => Command::CreateISO,
 
             // Execute Commands
             "run" => Command::Run,
@@ -57,32 +58,37 @@ impl Command {
 
             // Clean Commands
             "clean" | "clean-all" => Command::CleanAll,
+            "clean-sysroot" => Command::CleanSysroot,
             "clean-boot" | "clean-bootloader" => Command::CleanBootloader,
             "clean-kernel" => Command::CleanKernel,
             _ => return Err(ArgumentError::UnknownCommand(command.to_owned())),
         })
     }
 
-    pub fn execute(
-        &self,
-        options: &Options,
-        output: &Output,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn execute(&self, options: &Options) -> Result<(), Box<dyn std::error::Error>> {
         Ok(match self {
             // Build Commands
-            Command::BuildAll => build::build_all(options, output)?,
-            Command::BuildBootloader => build::build_bootloader(options, output)?,
-            Command::BuildKernel => build::build_kernel(options, output)?,
+            Command::BuildAll => build::build_all(options)?,
+            Command::BuildBootloader => build::build_bootloader(options)?,
+            Command::BuildKernel => build::build_kernel(options)?,
 
             // Install Commands
-            Command::InstallAll => install::install_all(options, output)?,
-            Command::InstallBootloader => install::install_bootloader(options, output)?,
-            Command::InstallKernel => install::install_kernel(options, output)?,
+            Command::InstallAll => install::install_all(options)?,
+            Command::InstallBootloader => install::install_bootloader(options)?,
+            Command::InstallKernel => install::install_kernel(options)?,
 
             // Create Image Commands
-            Command::CreateIMG => create_image::create_image(options, output)?,
+            Command::CreateIMG => create_image::create_image(options)?,
 
-            _ => panic!("TODO: Implement"),
+            // Run Commands
+            Command::Run => run::run(options)?,
+            Command::Debug => run::debug(options)?,
+
+            // Clean Commands
+            Command::CleanAll => clean::clean_all(options)?,
+            Command::CleanSysroot => clean::clean_sysroot(options)?,
+            Command::CleanBootloader => clean::clean_bootloader(options)?,
+            Command::CleanKernel => clean::clean_kernel(options)?,
         })
     }
 }

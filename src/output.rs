@@ -25,6 +25,10 @@ impl Output {
         self.log_custom("Installing", file_name, false, true);
     }
 
+    pub fn log_cleaning(&self, name: &str) {
+        self.log_custom("Cleaning", name, true, true);
+    }
+
     pub fn log_custom(&self, verb: &str, content: &str, header: bool, dots: bool) {
         if header && !self.first.swap(false, Ordering::AcqRel) {
             println!();

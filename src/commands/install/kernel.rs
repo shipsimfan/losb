@@ -1,33 +1,19 @@
 use super::install_file;
 use crate::{
     args::Options,
-    commands::{build::build_kernel, names::KERNEL_NAME},
-    output::Output,
+    commands::{build::build_kernel, kernel_path, KERNEL_NAME, KERNEL_SYSROOT_PATH},
 };
-
-const KERNEL_RELEASE_PATH: &'static str = "kernel/target/x86_64-los/release/init";
-const KERNEL_DEBUG_PATH: &'static str = "kernel/target/x86_64-los/debug/init";
-
-const KERNEL_DESTINATION_PATH: &'static str = "los/kernel.elf";
 
 const KERNEL_FILENAME: &'static str = "kernel.elf";
 
-pub fn install_kernel(
-    options: &Options,
-    output: &Output,
-) -> Result<(), Box<dyn std::error::Error>> {
-    build_kernel(options, output)?;
+pub fn install_kernel(options: &Options) -> Result<(), Box<dyn std::error::Error>> {
+    build_kernel(options)?;
 
-    output.log_installing(KERNEL_NAME);
+    options.output().log_installing(KERNEL_NAME);
     Ok(install_file(
-        if options.is_release() {
-            KERNEL_RELEASE_PATH
-        } else {
-            KERNEL_DEBUG_PATH
-        },
-        KERNEL_DESTINATION_PATH,
+        kernel_path(options),
+        KERNEL_SYSROOT_PATH,
         KERNEL_FILENAME,
         options,
-        output,
     )?)
 }

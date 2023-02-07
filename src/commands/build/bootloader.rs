@@ -1,12 +1,9 @@
 use crate::{
     args::Options,
-    commands::names::BOOTLOADER_NAME,
-    output::Output,
+    commands::{BOOTLOADER_NAME, BOOTLOADER_PATH},
     tools::{cargo, ToolError},
 };
 
-const BOOTLOADER_PATH: &'static str = "bootloader";
-
-pub fn build_bootloader(options: &Options, output: &Output) -> Result<(), ToolError> {
-    cargo::build(BOOTLOADER_NAME, BOOTLOADER_PATH, options, output)
+pub fn build_bootloader(options: &Options) -> Result<(), ToolError> {
+    cargo::build(BOOTLOADER_NAME, BOOTLOADER_PATH, options)
 }

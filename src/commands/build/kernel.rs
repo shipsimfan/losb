@@ -1,12 +1,9 @@
 use crate::{
     args::Options,
-    commands::names::KERNEL_NAME,
-    output::Output,
+    commands::{KERNEL_NAME, KERNEL_PATH},
     tools::{cargo, ToolError},
 };
 
-const KERNEL_PATH: &'static str = "kernel";
-
-pub fn build_kernel(options: &Options, output: &Output) -> Result<(), ToolError> {
-    cargo::build(KERNEL_NAME, KERNEL_PATH, options, output)
+pub fn build_kernel(options: &Options) -> Result<(), ToolError> {
+    cargo::build(KERNEL_NAME, KERNEL_PATH, options)
 }

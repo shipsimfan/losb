@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use crate::commands::Command;
+use crate::{commands::Command, output::Output};
 use argparse::ArgumentParser;
 
 mod error;
@@ -9,17 +9,17 @@ mod options;
 pub use error::*;
 pub use options::*;
 
-pub fn parse_args() -> Result<Options, Box<dyn std::error::Error>> {
-    let mut parser = create_parser();
+pub fn parse_args<'a>(output: &'a Output) -> Result<Options<'a>, Box<dyn std::error::Error>> {
+    let mut parser = create_parser::<'a>();
 
     add_arguments(&mut parser);
 
     parser
-        .parse_args_env(Options::default())
+        .parse_args_env(Options::new(output))
         .map_err(|error| error.into())
 }
 
-fn create_parser() -> ArgumentParser<Options> {
+fn create_parser<'a>() -> ArgumentParser<Options<'a>> {
     let mut parser = ArgumentParser::<Options>::new();
     parser
         .program_name("losb")

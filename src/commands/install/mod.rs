@@ -1,5 +1,5 @@
 use self::error::InstallError;
-use crate::{args::Options, output::Output};
+use crate::args::Options;
 use std::path::{Path, PathBuf};
 
 mod bootloader;
@@ -9,9 +9,9 @@ mod kernel;
 pub use bootloader::install_bootloader;
 pub use kernel::install_kernel;
 
-pub fn install_all(options: &Options, output: &Output) -> Result<(), Box<dyn std::error::Error>> {
-    install_bootloader(options, output)?;
-    install_kernel(options, output)
+pub fn install_all(options: &Options) -> Result<(), Box<dyn std::error::Error>> {
+    install_bootloader(options)?;
+    install_kernel(options)
 }
 
 fn install_file<S: AsRef<Path>, D: AsRef<Path>, F: AsRef<str>>(
@@ -19,9 +19,8 @@ fn install_file<S: AsRef<Path>, D: AsRef<Path>, F: AsRef<str>>(
     destination: D,
     file_name: F,
     options: &Options,
-    output: &Output,
 ) -> Result<(), InstallError> {
-    output.log_installing_file(file_name.as_ref());
+    options.output().log_installing_file(file_name.as_ref());
     let (full_source, full_destination) = prepare_install_paths(source, destination, options);
     make_directories(&full_destination, file_name.as_ref())?;
     copy_file(&full_source, &full_destination, file_name.as_ref())

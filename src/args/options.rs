@@ -1,7 +1,9 @@
-use crate::commands::Command;
+use crate::{commands::Command, output::Output};
 use std::path::{Path, PathBuf};
 
-pub struct Options {
+pub struct Options<'a> {
+    output: &'a Output,
+
     command: Command,
 
     // Common output options
@@ -18,6 +20,10 @@ pub struct Options {
     num_fats: u8,
     fixed_media: bool,
     volume_id: u32,
+
+    // Run options
+    ovmf_location: PathBuf,
+    debug_port: u16,
 }
 
 const DEFAULT_SYSROOT: &'static str = "sysroot";
@@ -29,7 +35,41 @@ const DEFAULT_RESERVED_SECTORS: u16 = 32;
 const DEFAULT_NUM_FATS: u8 = 2;
 const DEFAULT_VOLUME_ID: u32 = 0x0BADBEEF; // TODO: Replace this with a random number
 
-impl Options {
+const DEFAULT_OVMF_LOCATION: &'static str = "OVMF.fd";
+const DEFAULT_DEBUG_PORT: u16 = 1234;
+
+impl<'a> Options<'a> {
+    pub fn new(output: &'a Output) -> Self {
+        Options {
+            output,
+
+            command: Command::default(),
+
+            // Common options
+            path: PathBuf::new(),
+            sysroot: PathBuf::from(DEFAULT_SYSROOT),
+            full_sysroot: PathBuf::from(DEFAULT_SYSROOT),
+            output_path: PathBuf::from(DEFAULT_OUTPUT_PATH),
+            release: false,
+
+            // Image options
+            sector_size: DEFAULT_SECTOR_SIZE,
+            sectors_per_cluster: DEFAULT_SECTORS_PER_CLUSTER,
+            reserved_sectors: DEFAULT_RESERVED_SECTORS,
+            num_fats: DEFAULT_NUM_FATS,
+            fixed_media: true,
+            volume_id: DEFAULT_VOLUME_ID,
+
+            // Run options
+            ovmf_location: PathBuf::from(DEFAULT_OVMF_LOCATION),
+            debug_port: DEFAULT_DEBUG_PORT,
+        }
+    }
+
+    pub fn output(&self) -> &Output {
+        &self.output
+    }
+
     pub fn command(&self) -> Command {
         self.command
     }
@@ -72,6 +112,14 @@ impl Options {
 
     pub fn volume_id(&self) -> u32 {
         self.volume_id
+    }
+
+    pub fn ovmf_location(&self) -> &Path {
+        &self.ovmf_location
+    }
+
+    pub fn debug_port(&self) -> u16 {
+        self.debug_port
     }
 
     pub(super) fn set_command(&mut self, command: Command) {
@@ -144,6 +192,16 @@ impl Options {
         self.volume_id = volume_id;
     }
 
+    // TODO: Add to arguments
+    pub(super) fn set_ovmf_location(&mut self, location: PathBuf) {
+        self.ovmf_location = location;
+    }
+
+    // TODO: Add to arguments
+    pub(super) fn set_debug_port(&mut self, port: u16) {
+        self.debug_port = port;
+    }
+
     fn update_sysroot(&mut self) {
         if self.sysroot.is_absolute() {
             self.full_sysroot = self.sysroot.clone();
@@ -151,31 +209,5 @@ impl Options {
         }
 
         self.full_sysroot = self.path.join(&self.sysroot);
-    }
-}
-
-impl Default for Options {
-    fn default() -> Self {
-        Options {
-            command: Command::default(),
-
-            // Common options
-            path: PathBuf::new(),
-            sysroot: PathBuf::from(DEFAULT_SYSROOT),
-            full_sysroot: PathBuf::from(DEFAULT_SYSROOT),
-            output_path: PathBuf::from(DEFAULT_OUTPUT_PATH),
-            #[cfg(debug_assertions)]
-            release: false,
-            #[cfg(not(debug_assertions))]
-            release: true,
-
-            // Image options
-            sector_size: DEFAULT_SECTOR_SIZE,
-            sectors_per_cluster: DEFAULT_SECTORS_PER_CLUSTER,
-            reserved_sectors: DEFAULT_RESERVED_SECTORS,
-            num_fats: DEFAULT_NUM_FATS,
-            fixed_media: true,
-            volume_id: DEFAULT_VOLUME_ID,
-        }
     }
 }

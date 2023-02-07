@@ -1,6 +1,6 @@
 use self::writer::FileWriter;
 use super::install::install_all;
-use crate::{args::Options, output::Output};
+use crate::args::Options;
 
 mod bpb;
 mod calculate;
@@ -12,10 +12,10 @@ mod writer;
 
 type Cluster = u32;
 
-pub fn create_image(options: &Options, output: &Output) -> Result<(), Box<dyn std::error::Error>> {
-    install_all(options, output)?;
+pub fn create_image(options: &Options) -> Result<(), Box<dyn std::error::Error>> {
+    install_all(options)?;
 
-    output.log_custom("Creating", "image", true, true);
+    options.output().log_custom("Creating", "image", true, true);
 
     // Calculate FAT size
     let fat_size = calculate::calculate_fat_size(options)?;

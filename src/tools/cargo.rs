@@ -1,32 +1,42 @@
 use super::ToolError;
-use crate::{args::Options, output::Output};
+use crate::args::Options;
 use std::{
     path::Path,
     process::{Child, Command},
 };
 
+#[derive(PartialEq, Eq)]
+enum CargoCommand {
+    Build,
+    Clean,
+}
+
 const PROGRAM_NAME: &'static str = "cargo";
-const BUILD_COMMAND: &'static str = "build";
 const RELEASE_ARG: &'static str = "--release";
 
-pub fn build<P: AsRef<Path>>(
-    name: &str,
-    path: P,
-    options: &Options,
-    output: &Output,
-) -> Result<(), ToolError> {
-    output.log_building(name);
-    let command = create_command(path, options);
+pub fn build<P: AsRef<Path>>(name: &str, path: P, options: &Options) -> Result<(), ToolError> {
+    options.output().log_building(name);
+    let command = create_command(path, options, CargoCommand::Build);
     run_command(command)
 }
 
-fn create_command<P: AsRef<Path>>(path: P, options: &Options) -> Command {
+pub fn clean<P: AsRef<Path>>(name: &str, path: P, options: &Options) -> Result<(), ToolError> {
+    options.output().log_cleaning(name);
+    let command = create_command(path, options, CargoCommand::Clean);
+    run_command(command)
+}
+
+fn create_command<P: AsRef<Path>>(
+    path: P,
+    options: &Options,
+    cargo_command: CargoCommand,
+) -> Command {
     let mut command = Command::new(PROGRAM_NAME);
     command
-        .arg(BUILD_COMMAND)
+        .arg(cargo_command.to_string())
         .current_dir(options.path().join(path.as_ref()));
 
-    if options.is_release() {
+    if options.is_release() && cargo_command == CargoCommand::Build {
         command.arg(RELEASE_ARG);
     }
 
@@ -53,5 +63,14 @@ fn wait_for_child(mut child: Child) -> Result<(), ToolError> {
         Err(ToolError::RuntimeError(PROGRAM_NAME))
     } else {
         Ok(())
+    }
+}
+
+impl CargoCommand {
+    pub fn to_string(&self) -> &str {
+        match self {
+            CargoCommand::Build => "build",
+            CargoCommand::Clean => "clean",
+        }
     }
 }

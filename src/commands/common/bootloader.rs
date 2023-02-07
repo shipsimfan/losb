@@ -1,2 +1,2 @@
+pub const BOOTLOADER_PATH: &'static str = "bootloader";
 pub const BOOTLOADER_NAME: &'static str = "bootloader";
-pub const KERNEL_NAME: &'static str = "kernel";

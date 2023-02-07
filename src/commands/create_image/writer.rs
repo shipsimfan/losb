@@ -6,9 +6,9 @@ use super::{
 };
 use crate::args::Options;
 
-pub struct FileWriter<'a> {
+pub struct FileWriter<'a, 'b> {
     output: File,
-    options: &'a Options,
+    options: &'a Options<'b>,
 
     // FAT
     fat_size: usize,
@@ -41,8 +41,8 @@ fn calculate_size(fat_size: usize, options: &Options) -> usize {
     size
 }
 
-impl<'a> FileWriter<'a> {
-    pub fn new(fat_size: usize, options: &'a Options) -> Result<Self, CreateImageError> {
+impl<'a, 'b> FileWriter<'a, 'b> {
+    pub fn new(fat_size: usize, options: &'a Options<'b>) -> Result<Self, CreateImageError> {
         // Calculate full file size from fat size
         let full_size = calculate_size(fat_size, options);
 

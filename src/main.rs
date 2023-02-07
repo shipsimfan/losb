@@ -9,10 +9,10 @@ mod tools;
 
 fn run(output: &Output) -> Result<(), Box<dyn std::error::Error>> {
     // Parse arguments
-    let options = args::parse_args()?;
+    let options = args::parse_args(output)?;
 
     // Execute command
-    Ok(options.command().execute(&options, output)?)
+    Ok(options.command().execute(&options)?)
 }
 
 fn main() {

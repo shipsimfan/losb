@@ -1,8 +1,7 @@
 use super::install_file;
 use crate::{
     args::Options,
-    commands::{build::build_bootloader, names::BOOTLOADER_NAME},
-    output::Output,
+    commands::{build::build_bootloader, BOOTLOADER_NAME},
 };
 
 const BOOTLOADER_RELEASE_PATH: &'static str =
@@ -14,13 +13,10 @@ const BOOTLOADER_DESTINATION_PATH: &'static str = "EFI/BOOT/BOOTX64.EFI";
 
 const BOOTLOADER_FILENAME: &'static str = "BOOTX64.EFI";
 
-pub fn install_bootloader(
-    options: &Options,
-    output: &Output,
-) -> Result<(), Box<dyn std::error::Error>> {
-    build_bootloader(options, output)?;
+pub fn install_bootloader(options: &Options) -> Result<(), Box<dyn std::error::Error>> {
+    build_bootloader(options)?;
 
-    output.log_installing(BOOTLOADER_NAME);
+    options.output().log_installing(BOOTLOADER_NAME);
     Ok(install_file(
         if options.is_release() {
             BOOTLOADER_RELEASE_PATH
@@ -30,6 +26,5 @@ pub fn install_bootloader(
         BOOTLOADER_DESTINATION_PATH,
         BOOTLOADER_FILENAME,
         options,
-        output,
     )?)
 }
