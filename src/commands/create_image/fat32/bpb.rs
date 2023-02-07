@@ -1,5 +1,8 @@
-use super::{error::CreateImageError, file::File, fs_info::FS_INFO_SECTOR, Cluster};
-use crate::args::Options;
+use super::fs_info::FS_INFO_SECTOR;
+use crate::{
+    args::Options,
+    commands::create_image::{error::CreateImageError, file::File, Cluster},
+};
 
 #[repr(packed)]
 #[allow(unused)]
@@ -114,7 +117,7 @@ impl BIOSParameterBlock {
             total_sectors: image_size as u32 / options.sector_size() as u32,
 
             // FAT 32 Extension
-            fat_size_32: fat_size as u32,
+            fat_size_32: fat_size as u32 / options.sector_size() as u32,
             extended_flags: 0, // Sets to use runtime mirroring
             fs_version: 0,
             root_cluster: 0, // To be set later once the root directory is written

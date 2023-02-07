@@ -20,7 +20,9 @@ pub fn debug(options: &Options) -> Result<(), Box<dyn std::error::Error>> {
 
     let emulator = qemu::debug(options)?;
 
-    gdb::run(options)?;
+    if options.execute_gdb() {
+        gdb::run(options)?;
+    }
 
     drop(emulator);
     Ok(())

@@ -1,10 +1,15 @@
-use std::path::PathBuf;
-
-use crate::{commands::Command, output::Output};
+use crate::output::Output;
 use argparse::ArgumentParser;
+use common::add_common_arguments;
+use create_image::add_create_image_arguments;
+use run::add_run_arguments;
 
 mod error;
 mod options;
+
+mod common;
+mod create_image;
+mod run;
 
 pub use error::*;
 pub use options::*;
@@ -29,57 +34,7 @@ fn create_parser<'a>() -> ArgumentParser<Options<'a>> {
 }
 
 fn add_arguments(parser: &mut ArgumentParser<Options>) {
-    add_command_argument(parser);
-    add_path_argument(parser);
-    add_sysroot_argument(parser);
-    add_debug_argument(parser);
-    add_release_argument(parser);
-}
-
-fn add_command_argument(parser: &mut ArgumentParser<Options>) {
-    parser
-        .add_argument("COMMAND", |args, options| {
-            Ok(options.set_command(Command::parse(&args[0])?))
-        })
-        .help("The command to execute")
-        .required(false)
-        .count(1);
-}
-
-fn add_path_argument(parser: &mut ArgumentParser<Options>) {
-    parser
-        .add_argument("--path", |args, options| {
-            Ok(options.set_path(PathBuf::from(&args[0])))
-        })
-        .name("-p")
-        .help("Sets the base path to build from")
-        .required(false)
-        .count(1);
-}
-
-fn add_sysroot_argument(parser: &mut ArgumentParser<Options>) {
-    parser
-        .add_argument("--sysroot", |args, options| {
-            Ok(options.set_sysroot(PathBuf::from(&args[0])))
-        })
-        .name("-s")
-        .help("Sets the system root to install to and create images from")
-        .required(false)
-        .count(1);
-}
-
-fn add_debug_argument(parser: &mut ArgumentParser<Options>) {
-    parser
-        .add_argument("--debug", |_, options| Ok(options.set_debug()))
-        .help("Uses debug builds for the command")
-        .required(false)
-        .count(0);
-}
-
-fn add_release_argument(parser: &mut ArgumentParser<Options>) {
-    parser
-        .add_argument("--release", |_, options| Ok(options.set_release()))
-        .help("Uses release builds for the command")
-        .required(false)
-        .count(0);
+    add_common_arguments(parser);
+    add_create_image_arguments(parser);
+    add_run_arguments(parser);
 }

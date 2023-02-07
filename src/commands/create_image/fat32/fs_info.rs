@@ -1,5 +1,7 @@
-use super::{error::CreateImageError, file::File, Cluster};
-use crate::args::Options;
+use crate::{
+    args::Options,
+    commands::create_image::{error::CreateImageError, file::File, Cluster},
+};
 
 #[repr(packed)]
 #[allow(unused)]

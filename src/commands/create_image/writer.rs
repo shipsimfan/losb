@@ -1,8 +1,8 @@
 use super::{
-    bpb::{self, FIXED_MEDIA, REMOVABLE_MEDIA},
     error::CreateImageError,
+    fat32::{bpb, calculate_size, fs_info, write_bpb, write_fs_info, FIXED_MEDIA, REMOVABLE_MEDIA},
     file::File,
-    fs_info, Cluster,
+    Cluster,
 };
 use crate::args::Options;
 
@@ -21,25 +21,6 @@ pub struct FileWriter<'a, 'b> {
 }
 
 const END_OF_CLUSTER: Cluster = 0x0FFFFFFF;
-const CLUSTER_SIZE: usize = std::mem::size_of::<Cluster>();
-const RESERVED_CLUSTERS: usize = 2;
-
-fn calculate_size(fat_size: usize, options: &Options) -> usize {
-    let mut size = 0;
-
-    // Add the reserved sectors
-    size += options.reserved_sectors() as usize * options.sector_size() as usize;
-
-    // Add sectors for FATs
-    size += options.sector_size() as usize * fat_size * options.num_fats() as usize;
-
-    // Add sectors for data section
-    let clusters_per_fat_sector = options.sector_size() as usize / CLUSTER_SIZE;
-    let num_clusters = fat_size * clusters_per_fat_sector - RESERVED_CLUSTERS;
-    size += num_clusters * options.sectors_per_cluster() as usize * options.sector_size() as usize;
-
-    size
-}
 
 impl<'a, 'b> FileWriter<'a, 'b> {
     pub fn new(fat_size: usize, options: &'a Options<'b>) -> Result<Self, CreateImageError> {
@@ -53,10 +34,10 @@ impl<'a, 'b> FileWriter<'a, 'b> {
         output.set_len(full_size)?;
 
         // Write the BPB
-        bpb::write_bpb(full_size, fat_size, &mut output, options)?;
+        write_bpb(full_size, fat_size, &mut output, options)?;
 
         // Write the FSInfo
-        fs_info::write_fs_info(&mut output, options)?;
+        write_fs_info(&mut output, options)?;
 
         // Zero the FATs
         let fat_offset = options.reserved_sectors() as usize * options.sector_size() as usize;
@@ -66,7 +47,8 @@ impl<'a, 'b> FileWriter<'a, 'b> {
 
         // Setup the writer
         output.seek(fat_offset)?;
-        let clusters_per_fat_sector = options.sector_size() as usize / CLUSTER_SIZE;
+        let clusters_per_fat_sector =
+            options.sector_size() as usize / std::mem::size_of::<Cluster>();
         let mut writer = FileWriter {
             output,
             options,
@@ -143,7 +125,7 @@ impl<'a, 'b> FileWriter<'a, 'b> {
             self.output.write(&value.to_le_bytes())?;
         }
 
-        self.current_offset += CLUSTER_SIZE;
+        self.current_offset += std::mem::size_of::<Cluster>();
         self.free_count -= 1;
         self.next_free_cluster += 1;
 
