@@ -2,6 +2,7 @@ use super::install_file;
 use crate::{
     args::Options,
     commands::{build::build_bootloader, BOOTLOADER_NAME},
+    output::{Color, Finish, Initial},
 };
 
 const BOOTLOADER_RELEASE_PATH: &'static str =
@@ -16,7 +17,13 @@ const BOOTLOADER_FILENAME: &'static str = "BOOTX64.EFI";
 pub fn install_bootloader(options: &Options) -> Result<(), Box<dyn std::error::Error>> {
     build_bootloader(options)?;
 
-    options.output().log_installing(BOOTLOADER_NAME);
+    options.output().log(
+        "Installing",
+        "Bootloader",
+        Initial::NewLineNotFirst,
+        Color::Green,
+        Finish::dots_newline(),
+    );
     install_file(
         if options.is_release() {
             BOOTLOADER_RELEASE_PATH
@@ -27,7 +34,7 @@ pub fn install_bootloader(options: &Options) -> Result<(), Box<dyn std::error::E
         BOOTLOADER_FILENAME,
         options,
     )?;
-    options.output().log_finished("installing", BOOTLOADER_NAME);
+    options.output().log_complete("Installed", BOOTLOADER_NAME);
 
     Ok(())
 }

@@ -1,5 +1,8 @@
 use super::ToolError;
-use crate::args::Options;
+use crate::{
+    args::Options,
+    output::{Color, Finish, Initial},
+};
 use std::{
     path::Path,
     process::{Child, Command},
@@ -13,18 +16,25 @@ enum CargoCommand {
 
 const PROGRAM_NAME: &'static str = "cargo";
 const RELEASE_ARG: &'static str = "--release";
+const QUIET_ARG: &'static str = "-q";
 
 pub fn build<P: AsRef<Path>>(name: &str, path: P, options: &Options) -> Result<(), ToolError> {
-    options.output().log_building(name);
+    options.output().log(
+        "Building",
+        name,
+        Initial::NewLineNotFirst,
+        Color::Blue,
+        Finish::dots_newline(),
+    );
     let command = create_command(path, options, CargoCommand::Build);
     run_command(command)
 }
 
 pub fn clean<P: AsRef<Path>>(name: &str, path: P, options: &Options) -> Result<(), ToolError> {
-    options.output().log_cleaning(name);
+    options.output().log_begin("Cleaning", name, Initial::None);
     let command = create_command(path, options, CargoCommand::Clean);
     run_command(command)?;
-    options.output().log_finished("cleaning", name);
+    options.output().log_complete("Cleaned", name);
     Ok(())
 }
 
@@ -40,6 +50,10 @@ fn create_command<P: AsRef<Path>>(
 
     if options.is_release() && cargo_command == CargoCommand::Build {
         command.arg(RELEASE_ARG);
+    }
+
+    if cargo_command == CargoCommand::Clean {
+        command.arg(QUIET_ARG);
     }
 
     command

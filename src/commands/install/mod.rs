@@ -1,5 +1,5 @@
 use self::error::InstallError;
-use crate::args::Options;
+use crate::{args::Options, output::Initial};
 use std::path::{Path, PathBuf};
 
 mod bootloader;
@@ -20,10 +20,16 @@ fn install_file<S: AsRef<Path>, D: AsRef<Path>, F: AsRef<str>>(
     file_name: F,
     options: &Options,
 ) -> Result<(), InstallError> {
-    options.output().log_installing_file(file_name.as_ref());
+    options
+        .output()
+        .log_begin("Installing", file_name.as_ref(), Initial::None);
     let (full_source, full_destination) = prepare_install_paths(source, destination, options);
     make_directories(&full_destination, file_name.as_ref())?;
-    copy_file(&full_source, &full_destination, file_name.as_ref())
+    copy_file(&full_source, &full_destination, file_name.as_ref())?;
+    options
+        .output()
+        .log_complete("Installed", file_name.as_ref());
+    Ok(())
 }
 
 fn prepare_install_paths<S: AsRef<Path>, D: AsRef<Path>>(

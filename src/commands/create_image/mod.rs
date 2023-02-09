@@ -1,6 +1,9 @@
 use self::writer::FileWriter;
 use super::install::install_all;
-use crate::args::Options;
+use crate::{
+    args::Options,
+    output::{Color, Finish, Initial},
+};
 
 mod directory;
 mod error;
@@ -13,7 +16,13 @@ type Cluster = u32;
 pub fn create_image(options: &Options) -> Result<(), Box<dyn std::error::Error>> {
     install_all(options)?;
 
-    options.output().log_custom("Creating", "image", true, true);
+    options.output().log(
+        "Creating",
+        "image",
+        Initial::NewLine,
+        Color::Green,
+        Finish::dots_carriage_return(),
+    );
 
     // Calculate FAT size
     let fat_size = fat32::calculate_fat_size(options)?;
@@ -24,7 +33,7 @@ pub fn create_image(options: &Options) -> Result<(), Box<dyn std::error::Error>>
         directory::write_root_directory(&mut writer, options.sysroot().to_owned(), options)?;
     writer.finalize(root_cluster)?;
 
-    options.output().log_finished("creating", "image");
+    options.output().log_complete("Created", "image");
 
     Ok(())
 }
