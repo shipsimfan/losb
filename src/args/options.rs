@@ -39,6 +39,8 @@ const DEFAULT_VOLUME_ID: u32 = 0x0BADBEEF; // TODO: Replace this with a random n
 const DEFAULT_OVMF_LOCATION: &'static str = "OVMF.fd";
 const DEFAULT_DEBUG_PORT: u16 = 1234;
 
+const MAX_CLUSTER_SIZE: usize = 32 * 1024;
+
 impl<'a> Options<'a> {
     pub fn new(output: &'a Output) -> Self {
         Options {
@@ -164,7 +166,11 @@ impl<'a> Options<'a> {
         assert!(sectors_per_cluster.is_power_of_two());
 
         self.sectors_per_cluster = sectors_per_cluster;
-        // TODO: Add a warning if the sectors_per_cluster * bytes_per_sector > 32 * 1024
+
+        let cluster_size = sectors_per_cluster as usize * self.sector_size as usize;
+        if cluster_size > MAX_CLUSTER_SIZE {
+            self.output.log_warning(&format!("Cluster size is {} bytes. This size may not be compatible on some systems. The maximum recommended is {} bytes", cluster_size, MAX_CLUSTER_SIZE));
+        }
     }
 
     pub(super) fn set_reserved_sectors(&mut self, reserved_sectors: u16) {
@@ -174,8 +180,13 @@ impl<'a> Options<'a> {
 
     pub(super) fn set_num_fats(&mut self, num_fats: u8) {
         assert_ne!(num_fats, 0);
-        // TODO: Add warning if the FAT number is not 2
         self.num_fats = num_fats;
+
+        if num_fats != 2 {
+            self.output.log_warning(
+                "The number of FATs is not 2. This may not be compatible on some systems",
+            );
+        }
     }
 
     pub(super) fn set_fixed_media(&mut self) {

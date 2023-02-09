@@ -75,7 +75,7 @@ fn calculate_directory(
         let file_name = match path.file_name() {
             Some(file_name) => file_name.to_string_lossy(),
             None => {
-                // TODO: Add warning for unnamed file
+                options.output().log_warning("Discovered an unnamed file");
                 continue;
             }
         };
@@ -84,7 +84,10 @@ fn calculate_directory(
             * match calculate_short_name(file_name.as_bytes()) {
                 Some(_) => 1,
                 None => {
-                    // TODO: Add warning for invalid filename
+                    options.output().log_warning(&format!(
+                        "\"{}\" is an invalid filename. It will not be in the output image",
+                        file_name
+                    ));
                     continue;
                 }
             };
